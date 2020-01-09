@@ -1,6 +1,8 @@
 package env
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -172,6 +174,60 @@ func TestValue_Duration(t *testing.T) {
 			if got := Get(tt.get).Duration(tt.def); got != tt.want {
 				t.Errorf("Get().Duration() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestWatch(t *testing.T) {
+	type args struct {
+		ctx     context.Context
+		key     string
+		timeout time.Duration
+	}
+
+	tests := []struct {
+		name   string
+		args   args
+		wantfn func(<-chan *Value) error
+	}{
+		{
+			name: "Changes",
+			args: args{
+				ctx:     context.Background(),
+				key:     "TEST1_WATCHED",
+				timeout: time.Nanosecond,
+			},
+			wantfn: func(ch <-chan *Value) error {
+				w1 := "first_val"
+
+				os.Setenv("TEST1_WATCHED", w1)
+
+				if g1, ok := <-ch; !ok || g1.String("") != w1 {
+					return fmt.Errorf("%v, want %v", g1, w1)
+				}
+
+				w2 := "second_val"
+
+				os.Setenv("TEST1_WATCHED", w2)
+
+				if g2, ok := <-ch; !ok || g2.String("") != w2 {
+					return fmt.Errorf("%v, want %v", g2, w2)
+				}
+
+				return nil
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctx, cancel := context.WithTimeout(tt.args.ctx, time.Second)
+
+			if err := tt.wantfn(Watch(ctx, tt.args.key, tt.args.timeout)); err != nil {
+				t.Errorf("Watch() = %v", err)
+			}
+
+			cancel()
 		})
 	}
 }

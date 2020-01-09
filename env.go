@@ -1,6 +1,7 @@
 package env
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"time"
@@ -14,6 +15,36 @@ func Get(key string) *Value {
 	return &Value{
 		v: os.Getenv(key),
 	}
+}
+
+func Watch(ctx context.Context, key string, timeout time.Duration) <-chan *Value {
+	ch := make(chan *Value)
+	t := time.NewTicker(timeout)
+
+	go func() {
+		var prev string
+
+		for {
+			select {
+			case <-t.C:
+				if prev == os.Getenv(key) {
+					continue
+				}
+
+				prev = os.Getenv(key)
+
+				ch <- &Value{
+					v: prev,
+				}
+			case <-ctx.Done():
+				close(ch)
+
+				return
+			}
+		}
+	}()
+
+	return ch
 }
 
 func (v *Value) String(def string) string {
