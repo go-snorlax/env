@@ -7,7 +7,7 @@ import (
 )
 
 type Value struct {
-	v interface{}
+	v string
 }
 
 func Get(key string) *Value {
@@ -17,17 +17,15 @@ func Get(key string) *Value {
 }
 
 func (v *Value) String(def string) string {
-	val, ok := v.v.(string)
-
-	if !ok || val == "" {
+	if v.v == "" {
 		return def
 	}
 
-	return val
+	return v.v
 }
 
 func (v *Value) Int(def int) int {
-	val, err := strconv.Atoi(v.v.(string))
+	val, err := strconv.Atoi(v.v)
 
 	if err != nil || val == 0 {
 		return def
@@ -37,7 +35,7 @@ func (v *Value) Int(def int) int {
 }
 
 func (v *Value) Bool(def bool) bool {
-	val, err := strconv.ParseBool(v.v.(string))
+	val, err := strconv.ParseBool(v.v)
 
 	if err != nil {
 		return def
@@ -47,7 +45,7 @@ func (v *Value) Bool(def bool) bool {
 }
 
 func (v *Value) Duration(def time.Duration) time.Duration {
-	val, err := time.ParseDuration(v.v.(string))
+	val, err := time.ParseDuration(v.v)
 
 	if err != nil || val == 0 {
 		return def
