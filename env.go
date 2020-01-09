@@ -41,7 +41,6 @@ func Watch(ctx context.Context, key string, timeout time.Duration) <-chan *Value
 
 				return
 			}
-
 		}
 	}()
 
