@@ -84,3 +84,13 @@ func (v *Value) Duration(def time.Duration) time.Duration {
 
 	return val
 }
+
+func (v *Value) Float(def float64) float64 {
+	val, err := strconv.ParseFloat(v.v, 64)
+
+	if err != nil || val == 0 {
+		return def
+	}
+
+	return val
+}
