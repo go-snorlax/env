@@ -178,6 +178,53 @@ func TestValue_Duration(t *testing.T) {
 	}
 }
 
+func TestValue_Float(t *testing.T) {
+	tests := []struct {
+		name  string
+		setup func()
+		get   string
+		def   float64
+		want  float64
+	}{
+		{
+			name: "Exists",
+			setup: func() {
+				os.Setenv("TEST1_FLOAT", "5.5")
+			},
+			get:  "TEST1_FLOAT",
+			def:  1.0,
+			want: 5.5,
+		},
+		{
+			name: "Not exists",
+			get:  "TEST2_FLOAT",
+			def:  1.2,
+			want: 1.2,
+		},
+		{
+			name: "Zero",
+			setup: func() {
+				os.Setenv("TEST3_FLOAT", "0.0")
+			},
+			get:  "TEST3_FLOAT",
+			def:  2.0,
+			want: 2.0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.setup != nil {
+				tt.setup()
+			}
+
+			if got := Get(tt.get).Float(tt.def); got != tt.want {
+				t.Errorf("Get().Float() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestWatch(t *testing.T) {
 	type args struct {
 		ctx     context.Context
