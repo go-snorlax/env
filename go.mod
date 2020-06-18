@@ -1,3 +1,3 @@
-module github.com/go-snorlax/env
+module github.com/xdefrag/env
 
 go 1.13
